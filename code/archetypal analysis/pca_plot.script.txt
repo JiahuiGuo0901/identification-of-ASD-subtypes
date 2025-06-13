@@ -1,0 +1,30 @@
+library(archetypes)
+library(dplyr)
+library(ggplot2)
+library(ggsci)
+
+cases <- read.table("/home/lilyguio/autismsubs/people/lilyguio/AA/multi-prs/scaled_cases.txt",header=T)
+load("AA_cases.RData")
+aa_cases_k7 <- bestModel(a1[[7]])
+archetypes_cases <- as.data.frame(aa_cases_k7$archetypes)
+cases$archetype <- apply(aa_cases_k7$alphas,1,which.max)
+
+pca_cases <- prcomp(cases[,3:32])
+pca2 <- as.data.frame(pca_cases$x)
+pca2_cases <- cbind(pca2, archetype=cases$archetype)
+arche_cases_pca <- predict(pca_cases, newdata=archetypes_cases)
+
+
+p1 <- ggplot() + geom_point(data=pca2_cases,aes(x=PC1,y=PC2, color=factor(archetype)), alpha=0.5, size=1) +
+                 geom_point(data=arche_cases_pca, aes(x=PC1, y=PC2), color="black", size=4, shape=4,stroke=1.5) +
+                 scale_color_npg(name="Archetype") +
+                 theme_bw() +
+                 labs( x="Principal Component 1",
+                       y="Principal Component 2") +
+                 theme( legend.title=element_text(size=12, face="bold"),
+                        legend.text=element_text(size=10),
+                        axis.title=element_text(size=14))
+
+ggsave(p1,file="archetype_cases.png", width=8,height=8,dpi=300)
+
+print("WELL DONE!!!!")

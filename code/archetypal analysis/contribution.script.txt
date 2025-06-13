@@ -1,0 +1,40 @@
+library(tidytext)
+library(ggsci)
+library(viridis)
+library(archetypes)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+load("AA_cases.RData")
+aa_cases_k7 <- bestModel(a1[[7]])
+archetypes_cases <- as.data.frame(aa_cases_k7$archetypes)
+archetypes_cases_rank <- archetypes_cases %>% mutate(archetype = row_number()) %>%
+                        pivot_longer(cols=-archetype, names_to = "variables", values_to = "value") %>%
+                        group_by(archetype) %>% mutate(rank = rank(-abs(value))) %>%
+                        ungroup()%>%
+                        arrange(archetype, rank)
+
+temp_d1 <- archetypes_cases_rank %>% filter(rank <= 10)
+temp_d1$rank <- factor(temp_d1$rank, levels=1:10)
+t1 <- table(temp_d1$variables)
+name1 <- names(t1[t1>1])
+id1 <- setNames(seq_along(name1),name1)
+temp_d1$color <- ifelse(temp_d1$variables %in% name1, id1[temp_d1$variables],0)
+
+
+p4 <- ggplot(temp_d1,aes(x=value, y=reorder_within(variables,abs(value),archetype),
+fill=factor(color))) +                geom_bar(stat="identity", show.legend=FALSE) +
+        facet_wrap(~archetype,scales="free_y",ncol=2, labeller=as_labeller(function(x)
+paste("Archetype",x))) +              scale_y_reordered() +
+        scale_fill_viridis(discrete=TRUE,option="C",alpha=0.5) +
+        theme_bw() +
+        theme(strip.text = element_text(size=14, face="bold"),
+              strip.background=element_blank(),
+              axis.text.y=element_text(size=10), axis.text.x=element_text(size=10),
+              axis.title.x=element_text(size=14),
+              axis.title.y = element_text(size=14, face="bold", angle=90),
+              plot.title=element_text(hjust=0.5,size=16,face="bold")) +
+        labs(x="Coefficient(Alpha)", y="Variables")
+
+ggsave(p4,file="archetype_contribution.png", width=10,height=12,dpi=300)

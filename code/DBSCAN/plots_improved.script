@@ -1,0 +1,44 @@
+library(dbscan)
+library(ggplot2)
+
+cases <- read.table("/home/lilyguo/autismsubs/people/lilyguo/DBSCAN/pca1_250403/scaled_cases.txt",header=T)
+controls <- read.table("/home/lilyguo/autismsubs/people/lilyguo/DBSCAN/pca1_250403/scaled_controls.txt", header=T)
+
+k <- 21
+eps <- 6
+
+#cases
+kNNdist <- kNNdist(cases[,-(1:2)], k=k)
+
+df <- data.frame(index=1:length(kNNdist), distance=sort(kNNdist))
+
+p1 <- ggplot(data=df, aes(x=index, y=distance)) + geom_line(color="black",size=0.8) +
+	geom_hline(yintercept=eps, color="red", linetype="dashed", size=0.7) +
+	labs( #title= paste(k,"-nearest neighbor Distance Plot")
+	     x="Points sorted by distance",
+	     y=paste0(k,"-NN Distance")
+	) +
+	annotate("text", x=max(df$index)*0.05, y=eps+0.5, label="eps=6", color="red", size=4.5, hjust=0) +
+	theme_bw(base_size=14) +
+	theme( axis.title = element_text(), panel.grid.major=element_line(color="grey85") ) 
+
+ggsave(p1,file="knn_improved_cases_21.png",width=6.5,height=4.5,dpi=300)
+
+#controls
+kNNdist2 <- kNNdist(controls[,-(1:2)], k=k)
+
+df2 <- data.frame(index=1:length(kNNdist2), distance=sort(kNNdist2))
+
+p2 <- ggplot(data=df2, aes(x=index, y=distance)) + geom_line(color="black",size=0.8) +
+	geom_hline(yintercept=eps, color="red", linetype="dashed", size=0.7) +
+	labs( #title= paste(k,"-nearest neighbor Distance Plot")
+	     x="Points sorted by distance",
+	     y=paste0(k,"-NN Distance")
+	) +
+	annotate("text", x=max(df2$index)*0.05, y=eps+0.5, label="eps=6", color="red", size=4.5, hjust=0) +
+	theme_bw(base_size=14) +
+	theme( axis.title = element_text(), panel.grid.major=element_line(color="grey85") ) 
+
+ggsave(p2,file="knn_improved_controls_21.png",width=6.5,height=4.5,dpi=300)
+
+print("WELL DONE!")

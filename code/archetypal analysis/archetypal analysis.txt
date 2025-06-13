@@ -1,0 +1,44 @@
+library(archetypes)
+
+set.seed(250410)
+
+#cases
+d1 <- read.table("scaled_cases.txt",header=TRUE)
+
+a1 <- stepArchetypes(data=d1[,-(1:2)],k=1:20,nrep=10)
+
+png("screeplot_cases.png")
+screeplot(a1)
+dev.off()
+
+save(a1,file="AA_cases.RData")
+
+rss <- sapply(a1,function(model) model$rss)
+archetypes_count <- 1:length(rss)
+
+rss_df <- data.frame(Archetypes = archetypes_count, RSS=rss)
+
+k <- 7
+
+p1 <- ggplot(rss_df, aes(x=Archetypes, y=RSS)) +
+      geom_line(color="lightgreen", size=1.2) +
+      geom_point(shape=21, color="black", fill="white", size=2.5) +
+      geom_point(data=subset(rss_df, Archetypes==k), aes(x=Archetypes,y=RSS), color="red", size=4) +
+      labs(x = "Number of Archetypes",
+           y = "Residual Sum of Squares (RSS)") +
+      theme_bw() +
+      theme(axis.title=element_text(face="bold")) +
+      scale_x_continuous(breaks=archetypes_count)
+
+ggsave(p1, file="screeplot_cases.png", width=8, height=6, dpi=300)
+
+#controls
+d2 <- read.table("/home/lilyguio/autismsubs/people/lilyguio/AA/multi-prs/scaled_controls.txt",header=TRUE)
+
+a2 <- stepArchetypes(data=d2[,-(1:2)],k=1:20,nrep=10)
+
+png("screeplot_controls.png")
+screeplot(a2)
+dev.off()
+
+save(a2,file="AA_controls.RData")

@@ -1,0 +1,50 @@
+library(dbscan)
+library(cluster)
+library(clusterCrit)
+library(fpc)
+library(dplyr)
+
+DATA="/home/lilyguo/autismsubs/people/lilyguo/DBSCAN/pca1_250403/scaled_cases.txt"
+OUTPUT="dbscan_cases_eps6_pca1.txt"
+
+data <- read.table(file=DATA,header=TRUE)
+
+minPts_range <- 3:42
+eps <- 6
+set.seed(20250512)
+
+results <- data.frame(minPts=integer(), silhouette=numeric(),
+		      davies_boudin=numeric(), calinski_harabasz=numeric(),
+		      num_clusters = integer())
+
+
+for(minPts in minPts_range){
+	db <- dbscan::dbscan(data[,-(1:3)], eps=eps, minPts = minPts)
+	labels <- db$cluster
+	
+	#evaluation metrics
+	valid_labels <- labels[labels!=0]
+	n_clusters <- length(unique(valid_labels))
+	
+	if (n_clusters >= 2) {
+		sil <- silhouette(labels, dist(data[,-(1:3)]))
+		avg_sil <- mean(sil[,3])
+		
+		crit_labels <- as.integer(factor(labels))
+		int_idx <- intCriteria(as.matrix(data[,-(1:3)]), crit_labels, 
+					c("Davies_Bouldin", "Calinski_Harabasz"))
+		dbi <- int_idx$davies_bouldin
+		chi <- int_idx$calinski_harabasz
+	} else {
+		avg_sil <- NA
+		dbi <- NA
+		chi <- NA
+	}
+	results <- rbind(results, data.frame( minPts = minPts, silhouette=avg_sil,
+					      davies_bouldin=dbi, calinski_harabasz=chi,
+					      num_clusters=n_clusters ))
+}
+
+write.table(results, file=OUTPUT, row.names=FALSE, quote=FALSE)
+
+print("DONE!")

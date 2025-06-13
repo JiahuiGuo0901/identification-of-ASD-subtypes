@@ -1,0 +1,19 @@
+#!/bin/bash
+
+BFILE="/home/lilyguo/iPSYCH2015/HRC_Imputed/Ricopili/Autosomes/iPSYCH2015_HRC_2020_BG-Merge/GenomeWide/iPSYCH2015_HRC_2020-merge.hg19.ch.fl.bgs"
+
+for i in {1..7}; do
+    PHENOFILE="/home/lilyguo/autismsubs/people/lilyguo/AA/multi-prs/archetypes_within/prob_cases.txt"
+    COVARFILE="/home/lilyguo/autismsubs/people/lilyguo/AA/multi-prs/archetypes_within/cases250502.covar"
+    OUTPUT="aa${i}_case_gwas_covar_linear"
+    
+    echo "Running plink for phenotype file: $PHENOFILE"
+    
+    plink --bfile "$BFILE" --pheno "$PHENOFILE" --keep "$PHENOFILE" --mpheno $i \
+          --linear hide-covar --allow-no-sex \
+          --covar "$COVARFILE" \
+          --out "${OUTPUT}"
+          
+done
+
+echo "ALL works done!"

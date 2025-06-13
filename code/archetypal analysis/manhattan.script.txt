@@ -1,0 +1,21 @@
+library(qqman)
+library(ggplot2)
+library(dplyr)
+
+for (i in 1:7) {
+        pheno <- paste0("aa",i,"_case_gwas_covar_linear.assoc.linear")
+        
+        if(file.exists(pheno)){
+                gwas <- read.table(pheno,header=TRUE)
+                png(file=paste0("manhattan_plot_archetype",i,".png"),width=800,height=600,res=150)
+                p1 <- manhattan(gwas,
+                        main=paste("Manhattan Plot for Archetype",i,sep=""),
+                        col=c("blue4","orange3"),
+                        suggestiveline=-log10(1e-5),
+                        genomewideline=-log10(5e-8))
+                dev.off()
+                
+        }else { cat("ERROR!!!!!!!!!")}
+}
+
+cat("DONE!!!!!")
