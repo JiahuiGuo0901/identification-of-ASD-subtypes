@@ -2,4 +2,4 @@
 #Master thesis title* - Identification of ASD subtypes in iPSYCH2015 
 
 
-Hope you can have a nice day!
+Hope you have a nice day!
